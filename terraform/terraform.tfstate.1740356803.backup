@@ -1,0 +1,86 @@
+{
+  "version": 4,
+  "terraform_version": "1.10.5",
+  "serial": 6,
+  "lineage": "2c9a780f-7808-6fce-07d1-8e9469e7c1d2",
+  "outputs": {
+    "static_webapp_url": {
+      "value": "witty-meadow-0f055e610.4.azurestaticapps.net",
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "azurerm_resource_group",
+      "name": "rg",
+      "provider": "provider[\"registry.terraform.io/hashicorp/azurerm\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "/subscriptions/c33c0766-83ef-40fc-b9e9-d51bcc4ffca5/resourceGroups/myResourceGroup",
+            "location": "centralus",
+            "managed_by": "",
+            "name": "myResourceGroup",
+            "tags": {},
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo1NDAwMDAwMDAwMDAwLCJkZWxldGUiOjU0MDAwMDAwMDAwMDAsInJlYWQiOjMwMDAwMDAwMDAwMCwidXBkYXRlIjo1NDAwMDAwMDAwMDAwfSwic2NoZW1hX3ZlcnNpb24iOiIwIn0="
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "azurerm_static_web_app",
+      "name": "static_app",
+      "provider": "provider[\"registry.terraform.io/hashicorp/azurerm\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "api_key": "cf0c10693b914e1a578441cf2013dab7e1014a5aedfee8b3867ac7dedd6efdb504-593bebed-6e2e-4a35-b2e6-6e689812e6d601029100f055e610",
+            "app_settings": {},
+            "basic_auth": [],
+            "configuration_file_changes_enabled": true,
+            "default_host_name": "witty-meadow-0f055e610.4.azurestaticapps.net",
+            "id": "/subscriptions/c33c0766-83ef-40fc-b9e9-d51bcc4ffca5/resourceGroups/myResourceGroup/providers/Microsoft.Web/staticSites/myStaticWebApp",
+            "identity": [],
+            "location": "centralus",
+            "name": "myStaticWebApp",
+            "preview_environments_enabled": true,
+            "public_network_access_enabled": true,
+            "repository_branch": "",
+            "repository_token": "",
+            "repository_url": "",
+            "resource_group_name": "myResourceGroup",
+            "sku_size": "Free",
+            "sku_tier": "Free",
+            "tags": {},
+            "timeouts": null
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "api_key"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "repository_token"
+              }
+            ]
+          ],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDAsInJlYWQiOjMwMDAwMDAwMDAwMCwidXBkYXRlIjoxODAwMDAwMDAwMDAwfX0=",
+          "dependencies": [
+            "azurerm_resource_group.rg"
+          ]
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}
