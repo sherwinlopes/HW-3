@@ -27,6 +27,14 @@ jobs:
         run: terraform init
         working-directory: ./terraform
 
+      - name: Import Azure Resource Group (If Not Already Imported)
+        run: terraform import azurerm_resource_group.rg /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/myResourceGroup || echo "Resource group already imported"
+        working-directory: ./terraform
+
+      - name: Import Azure Static Web App (If Not Already Imported)
+        run: terraform import azurerm_static_web_app.static_app /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/myResourceGroup/providers/Microsoft.Web/staticSites/myStaticWebApp || echo "Static web app already imported"
+        working-directory: ./terraform
+
       - name: Apply Terraform
         run: terraform apply -auto-approve
         working-directory: ./terraform
