@@ -28,16 +28,23 @@ jobs:
         working-directory: ./terraform
 
       - name: Import Azure Resource Group (If Not Already Imported)
-        run: terraform import azurerm_resource_group.rg /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/myResourceGroup || echo "Resource group already imported"
+        run: |
+          terraform import azurerm_resource_group.rg "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/myResourceGroup" || true
         working-directory: ./terraform
 
       - name: Import Azure Static Web App (If Not Already Imported)
-        run: terraform import azurerm_static_web_app.static_app /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/myResourceGroup/providers/Microsoft.Web/staticSites/myStaticWebApp || echo "Static web app already imported"
+        run: |
+          terraform import azurerm_static_web_app.static_app "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/myResourceGroup/providers/Microsoft.Web/staticSites/myStaticWebApp" || true
         working-directory: ./terraform
 
-      - name: Import existing Azure service plan
+      - name: Import Existing Azure Service Plan (If Not Already Imported)
         run: |
           terraform import azurerm_service_plan.app_service_plan "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/myResourceGroup/providers/Microsoft.Web/serverFarms/myAppServicePlan" || true
+        working-directory: ./terraform
+
+      - name: Import Existing Azure Linux Web App (If Not Already Imported)
+        run: |
+          terraform import azurerm_linux_web_app.web_app "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/myResourceGroup/providers/Microsoft.Web/sites/myUniqueWebApp1234" || true
         working-directory: ./terraform
 
       - name: Apply Terraform
@@ -49,9 +56,6 @@ jobs:
 
       - name: Deploy Web App to Azure App Service
         run: |
-          az webapp deployment source config-zip \
-            --resource-group myResourceGroup \
-            --name myUniqueWebApp1234 \
-            --src webapp.zip
+          az webapp deploy --resource-group myResourceGroup --name myUniqueWebApp1234 --src-path webapp.zip
         env:
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
