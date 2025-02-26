@@ -1,61 +1,43 @@
-name: Azure Web App CD Pipeline
+name: Deploy React App to Azure with Terraform
 
 on:
   push:
     branches:
-      - main
+      - main  # Runs the workflow when pushing to main branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    env:
+      AZURE_WEBAPP_NAME: react-color-app-12345  # Replace with your web app name
+      AZURE_RG: react-app-rg  # Azure resource group
+      AZURE_LOCATION: centralus  # Adjust region as needed
 
-      - name: Log in to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: latest
+          terraform_version: 1.5.7  # Use latest stable version
 
-      - name: Initialize Terraform
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Terraform Init
         run: terraform init
-        working-directory: ./terraform
 
-      - name: Import Azure Resource Group (If Not Already Imported)
-        run: |
-          terraform import azurerm_resource_group.rg "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/myResourceGroup" || true
-        working-directory: ./terraform
-
-      - name: Import Azure Static Web App (If Not Already Imported)
-        run: |
-          terraform import azurerm_static_web_app.static_app "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/myResourceGroup/providers/Microsoft.Web/staticSites/myStaticWebApp" || true
-        working-directory: ./terraform
-
-      - name: Import Existing Azure Service Plan (If Not Already Imported)
-        run: |
-          terraform import azurerm_service_plan.app_service_plan "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/myResourceGroup/providers/Microsoft.Web/serverFarms/myAppServicePlan" || true
-        working-directory: ./terraform
-
-      - name: Import Existing Azure Linux Web App (If Not Already Imported)
-        run: |
-          terraform import azurerm_linux_web_app.web_app "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/myResourceGroup/providers/Microsoft.Web/sites/myUniqueWebApp1234" || true
-        working-directory: ./terraform
-
-      - name: Apply Terraform
+      - name: Terraform Apply
         run: terraform apply -auto-approve
-        working-directory: ./terraform
 
-      - name: Zip Web Application
-        run: zip -r webapp.zip ./web-app
-
-      - name: Deploy Web App to Azure App Service
+      - name: Deploy React App to Azure
         run: |
-          az webapp deploy --resource-group myResourceGroup --name myUniqueWebApp1234 --src-path webapp.zip
-        env:
-          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          az webapp deployment source config-zip --resource-group $AZURE_RG --name $AZURE_WEBAPP_NAME --src ./build.zip
+
+      - name: Verify Deployment
+        run: |
+          curl -Is "https://$AZURE_WEBAPP_NAME.azurewebsites.net" | head -n 1
