@@ -1,43 +1,33 @@
-name: Deploy React App to Azure with Terraform
+name: Deploy to Azure
 
 on:
   push:
     branches:
-      - main  # Runs the workflow when pushing to main branch
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
-    env:
-      AZURE_WEBAPP_NAME: react-color-app-12345  # Replace with your web app name
-      AZURE_RG: react-app-rg  # Azure resource group
-      AZURE_LOCATION: centralus  # Adjust region as needed
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.5.7  # Use latest stable version
+          terraform_version: 1.10.5  # Match your local Terraform version
 
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Terraform Init
-        run: terraform init
-
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
-
-      - name: Deploy React App to Azure
+      - name: Initialize Terraform
         run: |
-          az webapp deployment source config-zip --resource-group $AZURE_RG --name $AZURE_WEBAPP_NAME --src ./build.zip
+          cd terraform
+          terraform init
 
-      - name: Verify Deployment
+      - name: Validate Terraform
         run: |
-          curl -Is "https://$AZURE_WEBAPP_NAME.azurewebsites.net" | head -n 1
+          cd terraform
+          terraform validate
+
+      - name: Apply Terraform Configuration
+        run: |
+          cd terraform
+          terraform apply -auto-approve
