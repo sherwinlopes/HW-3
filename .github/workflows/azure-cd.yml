@@ -1,56 +1,39 @@
-name: Azure CD Pipeline
+name: Deploy React App to Azure
 
 on:
   push:
     branches:
-      - main  # Trigger deployment on pushes to the main branch
+      - main  # Trigger deployment when pushing to main branch
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Azure Login using stored credentials in GitHub Secrets
-      - name: Azure Login
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18  # Adjust if needed
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build React App
+        run: npm run build
+
+      - name: Zip Build Folder
+        run: zip -r build.zip build
+
+      - name: Login to Azure
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # Set up Terraform
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v3
         with:
-          terraform_version: 1.10.5  # Use your Terraform version
-
-      # Initialize Terraform
-      - name: Terraform Init
-        run: |
-          cd terraform
-          terraform init
-        env:
-          ARM_USE_OIDC: true
-
-      # Apply Terraform configuration (Provision Azure resources)
-      - name: Terraform Apply
-        run: |
-          cd terraform
-          terraform apply -auto-approve
-        env:
-          ARM_USE_OIDC: true
-
-      # Deploy the web application to Azure App Service
-      - name: Deploy App to Azure
-        run: |
-          az webapp deployment source config-zip \
-            --resource-group react-app-rg \
-            --name react-color-app-12345 \
-            --src ./web-app.zip  # Change this to the correct build artifact
-          
-      # Verify the deployment
-      - name: Verify Deployment
-        run: |
-          az webapp show --resource-group react-app-rg --name react-color-app-12345 --query "defaultHostName"
+          app-name: "react-color-app-12345"  # Replace with your actual app name
+          package: build.zip
