@@ -32,6 +32,11 @@ jobs:
           terraform import azurerm_resource_group.rg "/subscriptions/c33c0766-83ef-40fc-b9e9-d51bcc4ffca5/resourceGroups/react-app-rg" || echo "Resource Group already imported or does not exist"
         working-directory: terraform
 
+      - name: 'Import Existing Service Plan'
+        run: |
+          terraform import azurerm_service_plan.app_plan "/subscriptions/c33c0766-83ef-40fc-b9e9-d51bcc4ffca5/resourceGroups/react-app-rg/providers/Microsoft.Web/serverFarms/react-app-plan" || echo "App Service Plan already imported or does not exist"
+        working-directory: terraform
+
       - name: 'Plan Terraform'
         run: terraform plan
         working-directory: terraform
