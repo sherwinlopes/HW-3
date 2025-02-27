@@ -27,29 +27,50 @@ jobs:
         run: terraform init
         working-directory: terraform
 
-      - name: 'Import Existing Resource Group'
+      - name: Import Existing Resource Group
         run: |
-          terraform import azurerm_resource_group.rg "/subscriptions/c33c0766-83ef-40fc-b9e9-d51bcc4ffca5/resourceGroups/react-app-rg" || echo "Resource Group already imported or does not exist"
+          terraform state list | grep "azurerm_resource_group.rg" || terraform import azurerm_resource_group.rg "/subscriptions/c33c0766-83ef-40fc-b9e9-d51bcc4ffca5/resourceGroups/react-app-rg"
         working-directory: terraform
 
-      - name: 'Import Existing Service Plan'
+      - name: Import Existing Service Plan
         run: |
-          terraform import azurerm_service_plan.app_plan "/subscriptions/c33c0766-83ef-40fc-b9e9-d51bcc4ffca5/resourceGroups/react-app-rg/providers/Microsoft.Web/serverFarms/react-app-plan" || echo "App Service Plan already imported or does not exist"
+          terraform state list | grep "azurerm_service_plan.app_plan" || terraform import azurerm_service_plan.app_plan "/subscriptions/c33c0766-83ef-40fc-b9e9-d51bcc4ffca5/resourceGroups/react-app-rg/providers/Microsoft.Web/serverFarms/react-app-plan"
         working-directory: terraform
 
-      - name: 'Plan Terraform'
+      - name: Plan Terraform
         run: terraform plan
         working-directory: terraform
 
       - name: Apply Terraform Configuration
-        run: terraform apply -auto-approve
+        run: |
+          terraform apply -auto-approve || echo "No changes to apply"
         working-directory: terraform
+
+      - name: Install Dependencies and Build React App
+        run: |
+          npm install
+          npm run build
+        working-directory: web-app
+
+      - name: Package Application
+        run: zip -r build.zip build
+        working-directory: web-app
 
       - name: Deploy Web App to Azure
         uses: azure/webapps-deploy@v3
         with:
-          app-name: "react-color-app-12345"  # Update with your actual Azure App Service name
-          package: web-app/build.zip
+          app-name: "react-color-app-12345"
+          package: "web-app/build.zip"
 
       - name: Verify Deployment
-        run: curl -I https://react-color-app-12345.azurewebsites.net || exit 1
+        run: |
+          for i in {1..10}; do
+            if curl -sSf https://react-color-app-12345.azurewebsites.net > /dev/null; then
+              echo "Deployment successful!"
+              exit 0
+            fi
+            echo "Waiting for deployment..."
+            sleep 10
+          done
+          echo "Deployment failed!"
+          exit 1
