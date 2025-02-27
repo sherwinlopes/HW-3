@@ -27,6 +27,13 @@ jobs:
         run: terraform init
         working-directory: terraform
 
+      - name: 'Import Existing Resource Group'
+        run: |
+          terraform import azurerm_resource_group.rg "/subscriptions/c33c0766-83ef-40fc-b9e9-d51bcc4ffca5/resourceGroups/react-app-rg" || echo "Resource Group already imported or does not exist"
+
+      - name: 'Plan Terraform'
+        run: terraform plan
+
       - name: Apply Terraform Configuration
         run: terraform apply -auto-approve
         working-directory: terraform
